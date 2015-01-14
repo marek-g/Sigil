@@ -215,6 +215,8 @@ private:
 
     static void RemoveDCElements(xc::DOMDocument &document);
 
+    static void RemoveMetaElements(xc::DOMDocument &document);
+
     /**
      * Dispatches each metadata entry based on its type.
      * The specialized Write* functions write the elements.
@@ -241,7 +243,7 @@ private:
      * @param metavalue The value of the metadata to be written.
      * @param document The OPF DOM document.
      */
-    static void WriteSimpleMetadata(const QString &metaname, const QString &metavalue, xc::DOMDocument &document);
+    static void WriteSimpleMetadata(const QString &metaname, const QString &metavalue, const bool is_meta_tag, xc::DOMDocument &document);
 
     /**
      * Writes the <identifier> elements.

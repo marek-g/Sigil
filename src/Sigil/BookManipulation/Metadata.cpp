@@ -68,9 +68,26 @@ QString Metadata::GetName(QString code)
     return name;
 }
 
+bool Metadata::IsMetaTag(QString code)
+{
+    if (code.startsWith("calibre:")) {
+        return true;
+    }
+
+    if (code == "cover" || code == "Sigil version") {
+        return true;
+    }
+
+    if (m_Basic.contains(code)) {
+        return m_Basic[ code ].is_meta_tag;
+    }
+
+    return false;
+}
+
 QString Metadata::GetCode(QString name)
 {
-    QString code = "";
+    QString code = name;
 
     // Names are sufficiently unique between basic/relator
     // Except Publisher which is handled as an exception elsewhere
@@ -115,6 +132,7 @@ Metadata::MetaElement Metadata::MapToBookMetadata(const xc::DOMElement &element)
     QString element_name = XhtmlDoc::GetNodeName(element);
 
     if (element_name == "meta") {
+        meta.is_meta_tag = true;
         meta.name  = XtoQ(element.getAttribute(QtoX("name")));
         meta.value = XtoQ(element.getAttribute(QtoX("content")));
         meta.attributes[ "scheme" ] = XtoQ(element.getAttribute(QtoX("scheme")));
@@ -124,6 +142,7 @@ Metadata::MetaElement Metadata::MapToBookMetadata(const xc::DOMElement &element)
             return MapToBookMetadata(meta , false);
         }
     } else {
+        meta.is_meta_tag = false;
         meta.attributes = XhtmlDoc::GetNodeAttributes(element);
         meta.name = element_name;
         QString element_text = XtoQ(element.getTextContent());
@@ -176,6 +195,7 @@ Metadata::MetaElement Metadata::MapToBookMetadata(const Metadata::MetaElement &m
     MetaElement book_meta;
 
     if ((!name.isEmpty()) && (!value.isEmpty())) {
+        book_meta.is_meta_tag = meta.is_meta_tag;
         book_meta.name = name;
         book_meta.value = value;
     }
@@ -240,9 +260,16 @@ void Metadata::LoadBasicMetadata()
         QString name = data.at(i++);
         QString code = data.at(i++);
         QString description = data.at(i);
+
         MetaInfo meta;
         meta.name = name;
         meta.description  = description;
+        if (code == "calibre:series" || code == "calibre:series_index") {
+            meta.is_meta_tag = true;
+        } else {
+            meta.is_meta_tag = false;
+        }
+
         m_Basic.insert(code, meta);
         m_BasicFullNames.insert(name, code);
     }
@@ -524,6 +551,7 @@ Metadata::MetaElement Metadata::HtmlToOpfDC(const Metadata::MetaElement &meta)
     }
 
     MetaElement opf_meta;
+    opf_meta.is_meta_tag = meta.is_meta_tag;
     opf_meta.name  = name;
     opf_meta.value = meta.value;
 
@@ -563,6 +591,7 @@ Metadata::MetaElement Metadata::FreeFormMetadata(const Metadata::MetaElement &me
     }
 
     MetaElement book_meta;
+    book_meta.is_meta_tag = meta.is_meta_tag;
     book_meta.name  = name;
     book_meta.value = meta.value;
     return book_meta;
@@ -582,6 +611,7 @@ Metadata::MetaElement Metadata::CreateContribMetadata(const Metadata::MetaElemen
     }
 
     MetaElement book_meta;
+    book_meta.is_meta_tag = meta.is_meta_tag;
     book_meta.name  = role;
     book_meta.value = meta.value.toString();
     book_meta.file_as = meta.attributes.value("file-as");
@@ -614,6 +644,7 @@ Metadata::MetaElement Metadata::DateMetadata(const Metadata::MetaElement &meta)
                            date_parts[ 1 ].toInt(),
                            date_parts[ 2 ].toInt());
     MetaElement book_meta;
+    book_meta.is_meta_tag = meta.is_meta_tag;
     book_meta.name  = meta.name;
     book_meta.value = value;
     book_meta.file_as = dc_event;
@@ -631,6 +662,7 @@ Metadata::MetaElement Metadata::IdentifierMetadata(const Metadata::MetaElement &
     // Ignore any identifiers with an id as id can't be edited in dialog
     // And skip the uuid identifier in case it made it through without an id
     if (id.isEmpty() && scheme.toLower() != "uuid") {
+        book_meta.is_meta_tag = meta.is_meta_tag;
         book_meta.name = meta.name;
         book_meta.value = meta.value;
         book_meta.file_as = scheme;

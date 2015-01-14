@@ -110,6 +110,7 @@ void MetaEditor::AddEmptyMetadataToTable(const QStringList &metanames)
 {
     foreach(QString metaname, metanames) {
         Metadata::MetaElement book_meta;
+        book_meta.is_meta_tag = Metadata::Instance().IsMetaTag(metaname);
         book_meta.name = metaname;
 
         if (Metadata::Instance().IsRelator(book_meta.name)) {
@@ -232,6 +233,7 @@ void MetaEditor::Copy()
         code = Metadata::Instance().GetCode(code);
     }
 
+    book_meta.is_meta_tag = Metadata::Instance().IsMetaTag(code);
     book_meta.name = code;
     book_meta.value = m_MetaModel.data(m_MetaModel.index(row, 1));
     book_meta.file_as = m_MetaModel.data(m_MetaModel.index(row, 2)).toString();
@@ -257,6 +259,7 @@ void MetaEditor::AddMetaElements(QString name, QList<QVariant> values, QString r
 void MetaEditor::AddMetaElement(QString name, QVariant value, QString role_type, QString file_as)
 {
     Metadata::MetaElement book_meta;
+    book_meta.is_meta_tag = Metadata::Instance().IsMetaTag(name);
     book_meta.name = name;
     book_meta.value = value;
 

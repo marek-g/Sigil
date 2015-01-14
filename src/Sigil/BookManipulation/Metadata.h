@@ -39,6 +39,9 @@ class Metadata : public QObject
 public:
 
     struct MetaInfo {
+        // Is serialized to "meta" tag or to "dc:" tag
+        bool is_meta_tag;
+
         // The user-friendly name of the entry
         QString name;
 
@@ -47,6 +50,9 @@ public:
     };
 
     struct MetaElement {
+        // Is serialized to "meta" tag or to "dc:" tag
+        bool is_meta_tag;
+
         // The name of the element
         QString name;
 
@@ -74,6 +80,7 @@ public:
 
     QString GetText(QString text);
     QString GetName(QString code);
+    bool IsMetaTag(QString code);
     QString GetCode(QString name);
 
     /**

@@ -449,8 +449,6 @@ QList<Metadata::MetaElement> OPFResource::GetDCMetadata() const
 
     xc::DOMElement *metadata_node = GetMetadataElement(*document);
 
-    QString doc_name = XhtmlDoc::GetNodeName(*metadata_node);
-
     QList<xc::DOMElement *> metadata_elements =
         XhtmlDoc::GetTagMatchingDescendants(*metadata_node, "*");
 
@@ -484,6 +482,7 @@ void OPFResource::SetDCMetadata(const QList<Metadata::MetaElement> &metadata)
     QWriteLocker locker(&GetLock());
     shared_ptr<xc::DOMDocument> document = GetDocument();
     RemoveDCElements(*document);
+    RemoveMetaElements(*document);
     foreach(Metadata::MetaElement book_meta, metadata) {
         MetadataDispatcher(book_meta, *document);
     }
@@ -1080,6 +1079,29 @@ void OPFResource::RemoveDCElements(xc::DOMDocument &document)
 }
 
 
+void OPFResource::RemoveMetaElements(xc::DOMDocument &document)
+{
+    xc::DOMElement *metadata_node = GetMetadataElement(document);
+    QList<xc::DOMElement *> metadata_elements =
+        XhtmlDoc::GetTagMatchingDescendants(*metadata_node, "*");
+
+    foreach(xc::DOMElement * metadata_element, metadata_elements) {
+        Metadata::MetaElement book_meta = Metadata::Instance().MapToBookMetadata(*metadata_element);
+        if (book_meta.is_meta_tag) {
+            if (book_meta.name != "cover" && book_meta.name != "Sigil version") {
+
+                xc::DOMNode *parent = metadata_element->getParentNode();
+
+                if (parent) {
+                    parent->removeChild(metadata_element);
+                }
+
+            }
+        }
+    }
+}
+
+
 void OPFResource::MetadataDispatcher(const Metadata::MetaElement &book_meta, xc::DOMDocument &document)
 {
     // We ignore badly formed meta elements.
@@ -1094,17 +1116,18 @@ void OPFResource::MetadataDispatcher(const Metadata::MetaElement &book_meta, xc:
     // There is a relator for the publisher, but there is
     // also a special publisher element that we would rather use
     else if (book_meta.name == "pub") {
-        WriteSimpleMetadata("publisher", book_meta.value.toString(), document);
+        WriteSimpleMetadata("publisher", book_meta.value.toString(), book_meta.is_meta_tag, document);
     } else if (book_meta.name  == "language") {
         WriteSimpleMetadata(book_meta.name,
                             Language::instance()->GetLanguageCode(book_meta.value.toString()),
+                            book_meta.is_meta_tag,
                             document);
     } else if (book_meta.name  == "identifier") {
         WriteIdentifier(book_meta.file_as, book_meta.value.toString(), document);
     } else if (book_meta.name == "date") {
         WriteDate(book_meta.file_as, book_meta.value, document);
     } else {
-        WriteSimpleMetadata(book_meta.name, book_meta.value.toString(), document);
+        WriteSimpleMetadata(book_meta.name, book_meta.value.toString(), book_meta.is_meta_tag, document);
     }
 }
 
@@ -1145,15 +1168,24 @@ void OPFResource::WriteCreatorOrContributor(const Metadata::MetaElement book_met
 void OPFResource::WriteSimpleMetadata(
     const QString &metaname,
     const QString &metavalue,
+    const bool is_meta_tag,
     xc::DOMDocument &document)
 {
     try {
-        // This assumes that the "dc" prefix has been declared for the DC namespace
-        xc::DOMElement *element = document.createElementNS(QtoX(DUBLIN_CORE_NS), QtoX("dc:" + metaname));
-        element->setTextContent(QtoX(metavalue));
         xc::DOMElement *metadata = GetMetadataElement(document);
         if (!metadata) {
             return;
+        }
+
+        xc::DOMElement *element;
+        if (is_meta_tag) {
+            element = document.createElementNS(QtoX(OPF_XML_NAMESPACE), QtoX("meta"));
+            element->setAttribute(QtoX("name"),    QtoX(metaname));
+            element->setAttribute(QtoX("content"), QtoX(metavalue));
+        } else {
+            // This assumes that the "dc" prefix has been declared for the DC namespace
+            element = document.createElementNS(QtoX(DUBLIN_CORE_NS), QtoX("dc:" + metaname));
+            element->setTextContent(QtoX(metavalue));
         }
         metadata->appendChild(element);
     } catch (...) {
