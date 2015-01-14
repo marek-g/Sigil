@@ -56,7 +56,7 @@ static const QString OPF_REWRITTEN_COMMENT    = "<!-- Your OPF file was broken s
 static const QString TEMPLATE_TEXT =
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
     "<package version=\"2.0\" xmlns=\"http://www.idpf.org/2007/opf\" unique-identifier=\"BookId\">\n\n"
-    "  <metadata xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:opf=\"http://www.idpf.org/2007/opf\">\n"
+    "  <metadata xmlns:calibre=\"http://calibre.kovidgoyal.net/2009/metadata\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:opf=\"http://www.idpf.org/2007/opf\">\n"
     "    <dc:identifier opf:scheme=\"UUID\" id=\"BookId\">urn:uuid:%1</dc:identifier>\n"
     "  </metadata>\n\n"
     "  <manifest>\n"
@@ -446,12 +446,18 @@ QList<Metadata::MetaElement> OPFResource::GetDCMetadata() const
 {
     QReadLocker locker(&GetLock());
     shared_ptr<xc::DOMDocument> document = GetDocument();
-    QList<xc::DOMElement *> dc_elements =
-        XhtmlDoc::GetTagMatchingDescendants(*document, "*", DUBLIN_CORE_NS);
+
+    xc::DOMElement *metadata_node = GetMetadataElement(*document);
+
+    QString doc_name = XhtmlDoc::GetNodeName(*metadata_node);
+
+    QList<xc::DOMElement *> metadata_elements =
+        XhtmlDoc::GetTagMatchingDescendants(*metadata_node, "*");
+
     QList<Metadata::MetaElement> metadata;
-    foreach(xc::DOMElement * dc_element, dc_elements) {
+    foreach(xc::DOMElement * metadata_element, metadata_elements) {
         // Map the names in the OPF file to internal names
-        Metadata::MetaElement book_meta = Metadata::Instance().MapToBookMetadata(*dc_element);
+        Metadata::MetaElement book_meta = Metadata::Instance().MapToBookMetadata(*metadata_element);
 
         if (!book_meta.name.isEmpty() && !book_meta.value.toString().isEmpty()) {
             metadata.append(book_meta);

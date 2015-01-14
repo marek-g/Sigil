@@ -56,7 +56,7 @@ Metadata &Metadata::Instance()
 
 QString Metadata::GetName(QString code)
 {
-    QString name = "";
+    QString name = code;
 
     // Codes are unique between basic/relator
     if (m_Basic.contains(code)) {
@@ -229,6 +229,8 @@ void Metadata::LoadBasicMetadata()
          tr("Coverage") << "coverage" << tr("The extent or scope of the content of the publication's content.") <<
          tr("Rights") << "rights" << tr("Information about rights held in and over the publication. Rights information often encompasses Intellectual Property Rights (IPR), Copyright, and various Property Rights. If the Rights element is absent, no assumptions may be made about any rights held in or over the publication.") <<
          tr("Title") << "title" << tr("An optional extra title of the publication in addition to the main title already entered.") <<
+         tr("Series") << "calibre:series" << tr("A book series is a sequence of books having certain characteristics in common that are formally identified together as a group.") <<
+         tr("Series Index") << "calibre:series_index" << tr("Index of a book in a book series.") <<
          tr("Identifier") + ": DOI"   << "DOI" << tr("Digital Object Identifier") <<
          tr("Identifier") + ": ISBN"  << "ISBN" << tr("International Standard Book Number") <<
          tr("Identifier") + ": ISSN"  << "ISSN" << tr("International Standard Serial Number") <<
