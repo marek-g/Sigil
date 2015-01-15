@@ -1083,20 +1083,13 @@ void OPFResource::RemoveMetaElements(xc::DOMDocument &document)
 {
     xc::DOMElement *metadata_node = GetMetadataElement(document);
     QList<xc::DOMElement *> metadata_elements =
-        XhtmlDoc::GetTagMatchingDescendants(*metadata_node, "*");
+        XhtmlDoc::GetTagMatchingDescendants(*metadata_node, "meta");
 
     foreach(xc::DOMElement * metadata_element, metadata_elements) {
-        Metadata::MetaElement book_meta = Metadata::Instance().MapToBookMetadata(*metadata_element);
-        if (book_meta.is_meta_tag) {
-            if (book_meta.name != "cover" && book_meta.name != "Sigil version") {
+        xc::DOMNode *parent = metadata_element->getParentNode();
 
-                xc::DOMNode *parent = metadata_element->getParentNode();
-
-                if (parent) {
-                    parent->removeChild(metadata_element);
-                }
-
-            }
+        if (parent) {
+            parent->removeChild(metadata_element);
         }
     }
 }
