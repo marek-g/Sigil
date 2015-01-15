@@ -28,6 +28,7 @@
 
 #include "Dialogs/MetaEditor.h"
 #include "Dialogs/AddMetadata.h"
+#include "Dialogs/FetchMetadata.h"
 #include "Dialogs/MetaEditorItemDelegate.h"
 #include "Misc/Language.h"
 #include "Misc/SettingsStore.h"
@@ -542,6 +543,22 @@ void MetaEditor::MoveDown()
     }
 }
 
+void MetaEditor::FetchMetadata()
+{
+    QString title = ui.leTitle->text().trimmed();
+    QString author = ui.leAuthor->text().trimmed();
+
+    if ((title.isNull() || title.isEmpty()) &&
+        (author.isNull() || author.isEmpty())) {
+        QMessageBox::warning(this, tr("Error"), tr("Please fill author and/or title first."));
+        return;
+    }
+
+    ::FetchMetadata fetchMetadata(title, author, this);
+    if (fetchMetadata.exec() == QDialog::Accepted) {
+    }
+}
+
 void MetaEditor::Save()
 {
     SaveData();
@@ -609,6 +626,8 @@ void MetaEditor::ConnectSignals()
     connect(ui.btRemove,      SIGNAL(clicked()), this, SLOT(Remove()));
     connect(ui.tbMoveUp,      SIGNAL(clicked()), this, SLOT(MoveUp()));
     connect(ui.tbMoveDown,    SIGNAL(clicked()), this, SLOT(MoveDown()));
+
+    connect(ui.btFetchMetadata, SIGNAL(clicked()), this, SLOT(FetchMetadata()));
 
     connect(&m_MetaModel, SIGNAL(itemChanged(QStandardItem *)),
             this, SLOT(ItemChangedHandler(QStandardItem *)));

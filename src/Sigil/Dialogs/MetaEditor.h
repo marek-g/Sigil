@@ -111,6 +111,12 @@ private slots:
     void MoveDown();
 
     /**
+     * Shows the window for fetching book's metadata
+     * from external server.
+     */
+    void FetchMetadata();
+
+    /**
      * Adds a list of elements from the dialog to the saved metadata one at a time
      */
     void AddMetaElements(QString name, QList<QVariant> values, QString role_type = "", QString file_as = "");

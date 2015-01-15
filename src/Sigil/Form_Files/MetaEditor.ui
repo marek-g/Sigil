@@ -244,11 +244,22 @@ Readers may display entries in the order they are listed.</string>
     </layout>
    </item>
    <item>
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QPushButton" name="btFetchMetadata">
+       <property name="text">
+        <string>Fetch Metadata</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QDialogButtonBox" name="buttonBox">
+       <property name="standardButtons">
+        <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>
@@ -259,4 +270,5 @@ Readers may display entries in the order they are listed.</string>
   <tabstop>btRemove</tabstop>
  </tabstops>
  <resources/>
+ <connections/>
 </ui>
