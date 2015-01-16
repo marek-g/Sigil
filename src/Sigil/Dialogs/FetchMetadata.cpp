@@ -22,6 +22,8 @@
 #include <QtCore/QDate>
 #include <QtCore/QModelIndex>
 
+#include <QUrl>
+
 #include "BookManipulation/Metadata.h"
 #include "Dialogs/FetchMetadata.h"
 
@@ -30,4 +32,23 @@ FetchMetadata::FetchMetadata(const QString &title, const QString &author, QWidge
     QDialog(parent)
 {
     ui.setupUi(this);
+
+    if (!title.isEmpty()) {
+        ui.editFilter->setText(title);
+    } else {
+        ui.editFilter->setText(author);
+    }
+
+    connect(ui.btSearch, SIGNAL(clicked()), this, SLOT(Search()));
+}
+
+//
+//
+//
+void FetchMetadata::Search()
+{
+    QString searchText = ui.editFilter->text();
+
+    QString url = "http://lubimyczytac.pl/searcher/getsuggestions?phrase=";
+    url += QUrl::toPercentEncoding(searchText);
 }

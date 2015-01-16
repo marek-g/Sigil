@@ -44,6 +44,8 @@ signals:
 
 private slots:
 
+    void Search();
+
 private:
 
     Ui::FetchMetadata ui;
