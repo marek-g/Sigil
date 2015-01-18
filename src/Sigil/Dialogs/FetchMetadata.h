@@ -27,6 +27,8 @@
 
 #include <QtWidgets/QDialog>
 
+#include <QModelIndex>
+
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 
@@ -80,20 +82,23 @@ signals:
 private slots:
 
     void Search();
+    void ListItemClicked(const QModelIndex &index);
 
-    void ParseNetworkResponse(QNetworkReply *finished);
-    void CreateListModel(const QString &json);
-    MetadataListItem DecodeMetadataListItem(const QJsonObject &jsonObj);
+    void ParseListResponse(QNetworkReply *finished);
+    void ParseBookResponse(QNetworkReply *finished);
 
 private:
 
     Ui::FetchMetadata ui;
 
-    QNetworkAccessManager m_NetworkManager;
+    QNetworkAccessManager m_NetworkListManager;
+    QNetworkAccessManager m_NetworkBookManager;
 
     boost::shared_ptr<QList<MetadataListItem>> m_MetadataList;
     boost::shared_ptr<MetadataListModel> m_MetadataListModel;
 
+    void CreateListModel(const QString &json);
+    MetadataListItem DecodeMetadataListItem(const QJsonObject &jsonObj);
 };
 
 #endif // FETCHMETADATA_H

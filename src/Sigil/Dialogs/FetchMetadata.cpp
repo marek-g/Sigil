@@ -99,8 +99,12 @@ FetchMetadata::FetchMetadata(const QString &title, const QString &author, QWidge
     }
 
     connect(ui.btSearch, SIGNAL(clicked()), this, SLOT(Search()));
-    connect(&m_NetworkManager, SIGNAL(finished(QNetworkReply*)),
-            this, SLOT(ParseNetworkResponse(QNetworkReply*)));
+    connect(ui.lvResults, SIGNAL(clicked(const QModelIndex &)), this, SLOT(ListItemClicked(const QModelIndex &)));
+
+    connect(&m_NetworkListManager, SIGNAL(finished(QNetworkReply*)),
+            this, SLOT(ParseListResponse(QNetworkReply*)));
+    connect(&m_NetworkBookManager, SIGNAL(finished(QNetworkReply*)),
+            this, SLOT(ParseBookResponse(QNetworkReply*)));
 }
 
 //
@@ -116,11 +120,28 @@ void FetchMetadata::Search()
 
     QNetworkRequest request;
     request.setUrl(qurl);
-    m_NetworkManager.get(request);
+    m_NetworkListManager.get(request);
+
+    ui.lvResults->setEnabled(false);
 }
 
-void FetchMetadata::ParseNetworkResponse(QNetworkReply *finished)
+void FetchMetadata::ListItemClicked(const QModelIndex &index)
 {
+    int pos = index.row();
+    if (pos < 0 || pos >= m_MetadataList->length()) {
+        return;
+    }
+
+    MetadataListItem item = m_MetadataList->at(pos);
+    QNetworkRequest request;
+    request.setUrl(item.url);
+    m_NetworkBookManager.get(request);
+}
+
+void FetchMetadata::ParseListResponse(QNetworkReply *finished)
+{
+    ui.lvResults->setEnabled(true);
+
     if (finished->error() != QNetworkReply::NoError)
     {
         QMessageBox::critical(this, tr("Error"), QString(tr("Error code: %1").arg(finished->error())));
@@ -129,6 +150,17 @@ void FetchMetadata::ParseNetworkResponse(QNetworkReply *finished)
 
     CreateListModel((QString) finished->readAll());
     ui.lvResults->setModel(m_MetadataListModel.get());
+}
+
+void FetchMetadata::ParseBookResponse(QNetworkReply *finished)
+{
+    if (finished->error() != QNetworkReply::NoError)
+    {
+        QMessageBox::critical(this, tr("Error"), QString(tr("Error code: %1").arg(finished->error())));
+        return;
+    }
+
+    QString html = (QString) finished->readAll();
 }
 
 void FetchMetadata::CreateListModel(const QString &json)
