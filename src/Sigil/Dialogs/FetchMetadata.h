@@ -51,6 +51,19 @@ public:
 };
 
 
+class MetadataBookItem
+{
+public:
+
+    QString coverUrl;
+    QString description;
+    QString category;
+    QString series;
+    int seriesIndex;
+    double ratingValue;
+};
+
+
 class MetadataListModel : public QAbstractListModel
 {
     Q_OBJECT
@@ -99,6 +112,7 @@ private:
 
     void CreateListModel(const QString &json);
     MetadataListItem DecodeMetadataListItem(const QJsonObject &jsonObj);
+    MetadataBookItem DecodeMetadataBookItem(const QString &html);
 };
 
 #endif // FETCHMETADATA_H

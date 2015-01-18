@@ -37,6 +37,8 @@
 #include <QVariantMap>
 #include <QJsonArray>
 
+#include <QRegExp>
+
 #include "BookManipulation/Metadata.h"
 #include "Dialogs/FetchMetadata.h"
 
@@ -160,7 +162,7 @@ void FetchMetadata::ParseBookResponse(QNetworkReply *finished)
         return;
     }
 
-    QString html = (QString) finished->readAll();
+    MetadataBookItem bookItem = DecodeMetadataBookItem((QString) finished->readAll());
 }
 
 void FetchMetadata::CreateListModel(const QString &json)
@@ -210,4 +212,59 @@ MetadataListItem FetchMetadata::DecodeMetadataListItem(const QJsonObject &jsonOb
         metadata.author += fullname;
     }
     return metadata;
+}
+
+MetadataBookItem FetchMetadata::DecodeMetadataBookItem(const QString &html)
+{
+    MetadataBookItem item;
+
+    QRegExp rxCoverUrl("<div class=\"book-cover-size.*<a href=\"(.*)\"");
+    rxCoverUrl.setMinimal(true);
+    if (rxCoverUrl.indexIn(html, 0) != -1) {
+        item.coverUrl = rxCoverUrl.cap(1);
+    }
+
+    QString descriptionShort;
+    QRegExp rxDescriptionShort("<span id=\"sBookDescriptionShort\">(.*)</span>");
+    rxDescriptionShort.setMinimal(true);
+    if (rxDescriptionShort.indexIn(html, 0) != -1) {
+        descriptionShort = rxDescriptionShort.cap(1);
+    }
+
+    QString descriptionLong;
+    QRegExp rxDescriptionLong("<div id=\"sBookDescriptionLong\">(.*)</div>");
+    rxDescriptionLong.setMinimal(true);
+    if (rxDescriptionLong.indexIn(html, 0) != -1) {
+        descriptionLong = rxDescriptionLong.cap(1);
+    }
+
+    item.description = !descriptionLong.isEmpty() ? descriptionLong : descriptionShort;
+
+    QRegExp rxCategory("<dt>kategoria</dt>.*<dd><a.*>(.*)</a>");
+    rxCategory.setMinimal(true);
+    if (rxCategory.indexIn(html, 0) != -1) {
+        item.category = rxCategory.cap(1).replace("/", ", ");
+    }
+
+    item.seriesIndex = 0;
+    QRegExp rxSeries("Cykl: <a.*>(.*)</a>(.*)<");
+    rxSeries.setMinimal(true);
+    if (rxSeries.indexIn(html, 0) != -1) {
+        item.series = rxSeries.cap(1);
+        QString seriesIndex = rxSeries.cap(2);
+
+        QRegExp rxSeriesIndex("tom (\\d+)");
+        if (rxSeriesIndex.indexIn(seriesIndex, 0) != -1) {
+            item.seriesIndex = rxSeriesIndex.cap(1).toInt();
+        }
+    }
+
+    item.ratingValue = 0.0;
+    QRegExp rxRating("<meta property=\"books:rating:value\".*content=\"(.*)\"");
+    rxRating.setMinimal(true);
+    if (rxRating.indexIn(html, 0) != -1) {
+        item.ratingValue = rxRating.cap(1).toDouble();
+    }
+
+    return item;
 }
