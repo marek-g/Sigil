@@ -548,12 +548,6 @@ void MetaEditor::FetchMetadata()
     QString title = ui.leTitle->text().trimmed();
     QString author = ui.leAuthor->text().trimmed();
 
-    if ((title.isNull() || title.isEmpty()) &&
-        (author.isNull() || author.isEmpty())) {
-        QMessageBox::warning(this, tr("Error"), tr("Please fill author and/or title first."));
-        return;
-    }
-
     ::FetchMetadata fetchMetadata(title, author, this);
     if (fetchMetadata.exec() == QDialog::Accepted) {
     }

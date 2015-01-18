@@ -23,10 +23,45 @@
 #ifndef FETCHMETADATA_H
 #define FETCHMETADATA_H
 
+#include <boost/shared_ptr.hpp>
+
 #include <QtWidgets/QDialog>
+
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
 
 #include "ui_FetchMetadata.h"
 #include "BookManipulation/Metadata.h"
+
+
+class MetadataListItem
+{
+public:
+
+    QString url;
+    QString author;
+    QString title;
+    QString category;
+    QString coverUrl;
+    int rating;
+
+    QString DisplayName() const;
+};
+
+
+class MetadataListModel : public QAbstractListModel
+{
+    Q_OBJECT
+
+public:
+
+    MetadataListModel(const QList<MetadataListItem> &model, QObject *parent = 0);
+    int rowCount(const QModelIndex &parent = QModelIndex()) const;
+    QVariant data(const QModelIndex &index, int role) const;
+
+private:
+    QList<MetadataListItem> fetchedMetadata;
+};
 
 
 /**
@@ -46,9 +81,18 @@ private slots:
 
     void Search();
 
+    void ParseNetworkResponse(QNetworkReply *finished);
+    void CreateListModel(const QString &json);
+    MetadataListItem DecodeMetadataListItem(const QJsonObject &jsonObj);
+
 private:
 
     Ui::FetchMetadata ui;
+
+    QNetworkAccessManager m_NetworkManager;
+
+    boost::shared_ptr<QList<MetadataListItem>> m_MetadataList;
+    boost::shared_ptr<MetadataListModel> m_MetadataListModel;
 
 };
 
