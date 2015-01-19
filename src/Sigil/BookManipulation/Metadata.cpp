@@ -251,6 +251,7 @@ void Metadata::LoadBasicMetadata()
          tr("Title") << "title" << tr("An optional extra title of the publication in addition to the main title already entered.") <<
          tr("Series") << "calibre:series" << tr("A book series is a sequence of books having certain characteristics in common that are formally identified together as a group.") <<
          tr("Series Index") << "calibre:series_index" << tr("Index of a book in a book series.") <<
+         tr("Rating") << "calibre:rating" << tr("Rating of a book (0 to 10).") <<
          tr("Identifier") + ": DOI"   << "DOI" << tr("Digital Object Identifier") <<
          tr("Identifier") + ": ISBN"  << "ISBN" << tr("International Standard Book Number") <<
          tr("Identifier") + ": ISSN"  << "ISSN" << tr("International Standard Serial Number") <<
@@ -264,7 +265,7 @@ void Metadata::LoadBasicMetadata()
         MetaInfo meta;
         meta.name = name;
         meta.description  = description;
-        if (code == "calibre:series" || code == "calibre:series_index") {
+        if (code == "calibre:series" || code == "calibre:series_index" || code == "calibre:rating") {
             meta.is_meta_tag = true;
         } else {
             meta.is_meta_tag = false;
