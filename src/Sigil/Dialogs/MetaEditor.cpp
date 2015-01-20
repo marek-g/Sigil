@@ -550,6 +550,7 @@ void MetaEditor::FetchMetadata()
 
     ::FetchMetadata fetchMetadata(title, author, this);
     if (fetchMetadata.exec() == QDialog::Accepted) {
+        MetadataResult result = fetchMetadata.GetResult();
     }
 }
 

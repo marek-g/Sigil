@@ -79,6 +79,29 @@ private:
 };
 
 
+class MetadataResult
+{
+public:
+
+    bool bCover;
+    QString coverUrl;
+    bool bAuthor;
+    QString author;
+    bool bTitle;
+    QString title;
+    bool bCategory;
+    QString category;
+    bool bSeries;
+    QString series;
+    bool bSeriesIndex;
+    QString seriesIndex;
+    bool bRating;
+    QString rating;
+    bool bDescription;
+    QString description;
+};
+
+
 /**
  * The dialog for fetching metadata from external server.
  */
@@ -89,6 +112,8 @@ class FetchMetadata : public QDialog
 public:
 
     FetchMetadata(const QString &title, const QString &author, QWidget *parent = 0);
+
+    MetadataResult GetResult();
 
 signals:
 

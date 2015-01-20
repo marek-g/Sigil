@@ -31,6 +31,8 @@
 #include <QStringListModel>
 #include <QUrl>
 
+#include <QWebFrame>
+
 #include <QJsonValue>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -113,9 +115,30 @@ FetchMetadata::FetchMetadata(const QString &title, const QString &author, QWidge
             this, SLOT(ParseBookResponse(QNetworkReply*)));
 }
 
-//
-//
-//
+MetadataResult FetchMetadata::GetResult()
+{
+    MetadataResult result;
+
+    result.bCover = ui.cbCover->isChecked();
+    result.coverUrl = ui.labelCoverUrl->text();
+    result.bAuthor = ui.cbAuthor->isChecked();
+    result.author = ui.editAuthor->text();
+    result.bTitle = ui.cbTitle->isChecked();
+    result.title = ui.editTitle->text();
+    result.bCategory = ui.cbCategory->isChecked();
+    result.category = ui.editCategory->text();
+    result.bSeries = ui.cbSeries->isChecked();
+    result.series = ui.editSeries->text();
+    result.bSeriesIndex = ui.cbSeriesIndex->isChecked();
+    result.seriesIndex = QString::number(ui.sbSeriesIndex->value());
+    result.bRating = ui.cbRating->isChecked();
+    result.rating = QString::number(ui.spinRating->value(), 'f', 2);
+    result.bDescription = ui.cbDescription->isChecked();
+    result.description = ui.webViewDescription->page()->mainFrame()->toHtml();
+
+    return result;
+}
+
 void FetchMetadata::Search()
 {
     QString searchText = ui.editFilter->text();
