@@ -41,6 +41,7 @@
 
 #include "BookManipulation/Metadata.h"
 #include "Dialogs/FetchMetadata.h"
+#include "sigil_constants.h"
 
 using boost::shared_ptr;
 
@@ -100,6 +101,9 @@ FetchMetadata::FetchMetadata(const QString &title, const QString &author, QWidge
         ui.editFilter->setText(author);
     }
 
+    ui.lvResults->setEnabled(false);
+    DescriptionSetEnabled(false);
+
     connect(ui.btSearch, SIGNAL(clicked()), this, SLOT(Search()));
     connect(ui.lvResults, SIGNAL(clicked(const QModelIndex &)), this, SLOT(ListItemClicked(const QModelIndex &)));
 
@@ -125,6 +129,8 @@ void FetchMetadata::Search()
     m_NetworkListManager.get(request);
 
     ui.lvResults->setEnabled(false);
+    DescriptionSetEnabled(false);
+
 }
 
 void FetchMetadata::ListItemClicked(const QModelIndex &index)
@@ -135,6 +141,14 @@ void FetchMetadata::ListItemClicked(const QModelIndex &index)
     }
 
     MetadataListItem item = m_MetadataList->at(pos);
+
+    DescriptionSetEnabled(false);
+    ui.labelUrl->setText(item.url);
+    ui.cbAuthor->setChecked(true);
+    ui.editAuthor->setText(item.author);
+    ui.cbTitle->setChecked(true);
+    ui.editTitle->setText(item.title);
+
     QNetworkRequest request;
     request.setUrl(item.url);
     m_NetworkBookManager.get(request);
@@ -163,6 +177,22 @@ void FetchMetadata::ParseBookResponse(QNetworkReply *finished)
     }
 
     MetadataBookItem bookItem = DecodeMetadataBookItem((QString) finished->readAll());
+
+    ui.cbCover->setChecked(true);
+    ui.labelCoverUrl->setText(bookItem.coverUrl);
+    ui.webViewCover->setHtml(IMAGE_HTML_BASE_PREVIEW.arg(bookItem.coverUrl), QUrl(bookItem.coverUrl));
+    ui.cbDescription->setChecked(true);
+    ui.webViewDescription->setHtml(bookItem.description);
+    ui.cbCategory->setChecked(true);
+    ui.editCategory->setText(bookItem.category);
+    ui.cbSeries->setChecked(!bookItem.series.isEmpty());
+    ui.cbSeriesIndex->setChecked(!bookItem.series.isEmpty());
+    ui.editSeries->setText(bookItem.series);
+    ui.sbSeriesIndex->setValue(bookItem.seriesIndex);
+    ui.cbRating->setChecked(true);
+    ui.spinRating->setValue(bookItem.ratingValue);
+
+    DescriptionSetEnabled(true);
 }
 
 void FetchMetadata::CreateListModel(const QString &json)
@@ -266,5 +296,36 @@ MetadataBookItem FetchMetadata::DecodeMetadataBookItem(const QString &html)
         item.ratingValue = rxRating.cap(1).toDouble();
     }
 
+    PreprocessMetadataBookItem(item);
+
     return item;
+}
+
+void FetchMetadata::PreprocessMetadataBookItem(MetadataBookItem &item)
+{
+    item.description = QString("<b>%1 / 10.0</b><br/><br/>%2<p><a href=\"%3\"/>%3</p>")
+            .arg(QString::number(item.ratingValue, 'f', 2))
+            .arg(item.description)
+            .arg(ui.labelUrl->text());
+}
+
+void FetchMetadata::DescriptionSetEnabled(bool enabled)
+{
+    ui.cbCover->setEnabled(enabled);
+    ui.webViewCover->setEnabled(enabled);
+    ui.cbAuthor->setEnabled(enabled);
+    ui.editAuthor->setEnabled(enabled);
+    ui.cbTitle->setEnabled(enabled);
+    ui.editTitle->setEnabled(enabled);
+    ui.cbCategory->setEnabled(enabled);
+    ui.editCategory->setEnabled(enabled);
+    ui.cbSeries->setEnabled(enabled);
+    ui.editSeries->setEnabled(enabled);
+    ui.cbSeriesIndex->setEnabled(enabled);
+    ui.sbSeriesIndex->setEnabled(enabled);
+    ui.cbRating->setEnabled(enabled);
+    ui.spinRating->setEnabled(enabled);
+    ui.cbDescription->setEnabled(enabled);
+    ui.webViewDescription->setEnabled(enabled);
+    ui.labelRatingMax->setEnabled(enabled);
 }

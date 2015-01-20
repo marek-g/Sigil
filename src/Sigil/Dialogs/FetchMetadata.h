@@ -113,6 +113,9 @@ private:
     void CreateListModel(const QString &json);
     MetadataListItem DecodeMetadataListItem(const QJsonObject &jsonObj);
     MetadataBookItem DecodeMetadataBookItem(const QString &html);
+    void PreprocessMetadataBookItem(MetadataBookItem &item);
+
+    void DescriptionSetEnabled(bool enabled);
 };
 
 #endif // FETCHMETADATA_H
