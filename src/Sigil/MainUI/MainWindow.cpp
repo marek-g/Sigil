@@ -1043,6 +1043,11 @@ void MainWindow::AddCover()
     }
     QString image_filename = selected_files.first();
 
+    AddCover(image_filename);
+}
+
+void MainWindow::AddCover(const QString &image_filename)
+{
     QApplication::setOverrideCursor(Qt::WaitCursor);
 
     // Find existing cover HTML file if there is one.

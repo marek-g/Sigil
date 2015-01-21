@@ -161,6 +161,8 @@ public:
 
     static bool UnZip(const QString &zippath, const QString &destdir);
     static QStringList ZipInspect(const QString &zippath);
+
+    static QByteArray GetDataFromUrl(const QString &url);
 };
 
 #endif // UTILITY_H

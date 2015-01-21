@@ -32,7 +32,10 @@
 #include "Dialogs/MetaEditorItemDelegate.h"
 #include "Misc/Language.h"
 #include "Misc/SettingsStore.h"
+#include "Misc/TempFolder.h"
+#include "Misc/Utility.h"
 #include "ResourceObjects/OPFResource.h"
+#include "BookManipulation/FolderKeeper.h"
 
 static const QString SETTINGS_GROUP      = "meta_editor";
 
@@ -709,5 +712,18 @@ void MetaEditor::FillWithFetchedMetadata(MetadataResult result)
         book_meta.value = result.description;
         AddOrUpdateMetadataToTable(book_meta);
         m_IsDataModified = true;
+    }
+
+    if (result.bCover) {
+        // download cover file
+        TempFolder tempfolder;
+        QString fullfilepath = tempfolder.GetPath() + "/" + "cover.jpg";
+        QByteArray arr = Utility::GetDataFromUrl(result.coverUrl);
+        QFile file(fullfilepath);
+        file.open(QIODevice::WriteOnly);
+        file.write(arr);
+        file.close();
+
+        Resource &resCover = m_Book->GetFolderKeeper()->AddContentFileToFolder(fullfilepath);
     }
 }
