@@ -30,6 +30,7 @@
 #include <BookManipulation/Metadata.h>
 #include "BookManipulation/Book.h"
 #include "Dialogs/FetchMetadata.h"
+#include "MainUI/MainWindow.h"
 
 #include "ui_MetaEditor.h"
 
@@ -50,7 +51,7 @@ public:
      *
      * @param parent The object's parent.
      */
-    MetaEditor(QWidget *parent = 0);
+    MetaEditor(MainWindow &main_window);
     ~MetaEditor();
     void SetBook(QSharedPointer<Book> book);
     void ForceClose();
@@ -146,6 +147,8 @@ private slots:
     void RowsRemovedHandler(const QModelIndex &parent, int start, int end);
 
 private:
+
+    MainWindow &m_MainWindow;
 
     // We need this to be able to use a forward
     // declaration of Book in the QSharedPointer

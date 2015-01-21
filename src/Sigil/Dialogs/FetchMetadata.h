@@ -130,6 +130,8 @@ private:
     Ui::FetchMetadata ui;
 
     QString m_Description;
+    QString m_Url;
+    QString m_CoverUrl;
 
     QNetworkAccessManager m_NetworkListManager;
     QNetworkAccessManager m_NetworkBookManager;

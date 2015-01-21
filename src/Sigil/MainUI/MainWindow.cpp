@@ -144,7 +144,7 @@ MainWindow::MainWindow(const QString &openfilepath, bool is_internal, QWidget *p
     m_BookBrowser(NULL),
     m_Clips(NULL),
     m_FindReplace(new FindReplace(*this)),
-    m_MetaEditor(new MetaEditor(this)),
+    m_MetaEditor(new MetaEditor(*this)),
     m_TableOfContents(NULL),
     m_ValidationResultsView(NULL),
     m_PreviewWindow(NULL),

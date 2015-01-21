@@ -120,7 +120,7 @@ MetadataResult FetchMetadata::GetResult()
     MetadataResult result;
 
     result.bCover = ui.cbCover->isChecked();
-    result.coverUrl = ui.labelCoverUrl->text();
+    result.coverUrl = m_CoverUrl;
     result.bAuthor = ui.cbAuthor->isChecked();
     result.author = ui.editAuthor->text();
     result.bTitle = ui.cbTitle->isChecked();
@@ -166,7 +166,7 @@ void FetchMetadata::ListItemClicked(const QModelIndex &index)
     MetadataListItem item = m_MetadataList->at(pos);
 
     DescriptionSetEnabled(false);
-    ui.labelUrl->setText(item.url);
+    m_Url = item.url;
     ui.cbAuthor->setChecked(true);
     ui.editAuthor->setText(item.author);
     ui.cbTitle->setChecked(true);
@@ -202,7 +202,7 @@ void FetchMetadata::ParseBookResponse(QNetworkReply *finished)
     MetadataBookItem bookItem = DecodeMetadataBookItem((QString) finished->readAll());
 
     ui.cbCover->setChecked(true);
-    ui.labelCoverUrl->setText(bookItem.coverUrl);
+    m_CoverUrl = bookItem.coverUrl;
     ui.webViewCover->setHtml(IMAGE_HTML_BASE_PREVIEW.arg(bookItem.coverUrl), QUrl(bookItem.coverUrl));
     ui.cbDescription->setChecked(true);
     ui.webViewDescription->setHtml(bookItem.description);
@@ -329,7 +329,7 @@ void FetchMetadata::PreprocessMetadataBookItem(MetadataBookItem &item)
     m_Description = QString("<b>%1 / 10.0</b><br/><br/>%2<p><a href=\"%3\"/>%3</p>")
             .arg(QString::number(item.ratingValue, 'f', 2))
             .arg(item.description)
-            .arg(ui.labelUrl->text());
+            .arg(m_Url);
 
     item.description = m_Description;
 }

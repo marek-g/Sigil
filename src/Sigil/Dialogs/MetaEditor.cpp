@@ -39,9 +39,10 @@
 
 static const QString SETTINGS_GROUP      = "meta_editor";
 
-MetaEditor::MetaEditor(QWidget *parent)
+MetaEditor::MetaEditor(MainWindow &main_window)
     :
-    QDialog(parent),
+    QDialog(&main_window),
+    m_MainWindow(main_window),
     m_cbDelegate(new MetaEditorItemDelegate()),
     m_IsDataModified(false)
 {
@@ -681,7 +682,7 @@ void MetaEditor::FillWithFetchedMetadata(MetadataResult result)
     if (result.bCategory) {
         Metadata::MetaElement book_meta;
         book_meta.name = "type";
-        book_meta.value = result.author;
+        book_meta.value = result.category;
         AddOrUpdateMetadataToTable(book_meta);
         m_IsDataModified = true;
     }
@@ -724,6 +725,8 @@ void MetaEditor::FillWithFetchedMetadata(MetadataResult result)
         file.write(arr);
         file.close();
 
-        Resource &resCover = m_Book->GetFolderKeeper()->AddContentFileToFolder(fullfilepath);
+        Resource &resCover = m_Book->GetFolderKeeper().AddContentFileToFolder(fullfilepath);
+
+        m_MainWindow.AddCover(resCover.Filename());
     }
 }
