@@ -134,7 +134,7 @@ MetadataResult FetchMetadata::GetResult()
     result.bRating = ui.cbRating->isChecked();
     result.rating = QString::number(ui.spinRating->value(), 'f', 2);
     result.bDescription = ui.cbDescription->isChecked();
-    result.description = ui.webViewDescription->page()->mainFrame()->toHtml();
+    result.description = m_Description;
 
     return result;
 }
@@ -326,10 +326,12 @@ MetadataBookItem FetchMetadata::DecodeMetadataBookItem(const QString &html)
 
 void FetchMetadata::PreprocessMetadataBookItem(MetadataBookItem &item)
 {
-    item.description = QString("<b>%1 / 10.0</b><br/><br/>%2<p><a href=\"%3\"/>%3</p>")
+    m_Description = QString("<b>%1 / 10.0</b><br/><br/>%2<p><a href=\"%3\"/>%3</p>")
             .arg(QString::number(item.ratingValue, 'f', 2))
             .arg(item.description)
             .arg(ui.labelUrl->text());
+
+    item.description = m_Description;
 }
 
 void FetchMetadata::DescriptionSetEnabled(bool enabled)

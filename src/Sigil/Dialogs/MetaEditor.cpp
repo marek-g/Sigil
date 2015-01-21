@@ -149,8 +149,23 @@ void MetaEditor::AddMetadataToTable(Metadata::MetaElement book_meta, int row)
     }
 
     m_MetaModel.insertRow(row);
-    // Set the display name
-    // All translations done in Metadata for consistency
+
+    UpdateMetadataToTable(book_meta, row);
+}
+
+void MetaEditor::AddOrUpdateMetadataToTable(Metadata::MetaElement book_meta)
+{
+    int row = FindMetadataRowInTable(book_meta);
+    if (row < 0) {
+        row = m_MetaModel.rowCount();
+        m_MetaModel.insertRow(row);
+    }
+
+    UpdateMetadataToTable(book_meta, row);
+}
+
+void MetaEditor::UpdateMetadataToTable(Metadata::MetaElement book_meta, int row)
+{
     QString fullname;
 
     if (book_meta.name == "date") {
@@ -195,6 +210,19 @@ void MetaEditor::AddMetadataToTable(Metadata::MetaElement book_meta, int row)
     }
 }
 
+int MetaEditor::FindMetadataRowInTable(Metadata::MetaElement book_meta)
+{
+    for (int row = 0; row < m_MetaModel.rowCount(); row++) {
+        QString name = m_MetaModel.data(m_MetaModel.index(row, 0)).toString();
+        QString role_type = m_MetaModel.data(m_MetaModel.index(row, 3)).toString();
+        QString code = NameToCode(name);
+        if (code == book_meta.name && role_type == book_meta.role_type) {
+            return row;
+        }
+    }
+
+    return -1;
+}
 
 void MetaEditor::AddBasic()
 {
@@ -309,18 +337,7 @@ bool MetaEditor::SaveData()
         QString file_as = m_MetaModel.data(m_MetaModel.index(row, 2)).toString();
         QString role_type = m_MetaModel.data(m_MetaModel.index(row, 3)).toString();
         // Mapping of translations to code done in Metadata for consistency
-        QString code;
-
-        // Handle date differently due to event name stored in file_as
-        if (name == Metadata::Instance().GetText("date")) {
-            code = "date";
-        }
-        // Handle identifier differently due to scheme name stored in file_as
-        else if (name == Metadata::Instance().GetText("identifier")) {
-            code = "identifier";
-        } else {
-            code = Metadata::Instance().GetCode(name);
-        }
+        QString code = NameToCode(name);
 
         // For string-based metadata, create multiple entries
         // if the typed in value contains semicolons
@@ -340,6 +357,23 @@ bool MetaEditor::SaveData()
     return true;
 }
 
+QString MetaEditor::NameToCode(QString name)
+{
+    QString code;
+
+    // Handle date differently due to event name stored in file_as
+    if (name == Metadata::Instance().GetText("date")) {
+        code = "date";
+    }
+    // Handle identifier differently due to scheme name stored in file_as
+    else if (name == Metadata::Instance().GetText("identifier")) {
+        code = "identifier";
+    } else {
+        code = Metadata::Instance().GetCode(name);
+    }
+
+    return code;
+}
 
 void MetaEditor::ReadMetadataFromBook()
 {
@@ -551,6 +585,7 @@ void MetaEditor::FetchMetadata()
     ::FetchMetadata fetchMetadata(title, author, this);
     if (fetchMetadata.exec() == QDialog::Accepted) {
         MetadataResult result = fetchMetadata.GetResult();
+        FillWithFetchedMetadata(result);
     }
 }
 
@@ -628,4 +663,51 @@ void MetaEditor::ConnectSignals()
             this, SLOT(ItemChangedHandler(QStandardItem *)));
     connect(&m_MetaModel, SIGNAL(rowsRemoved(const QModelIndex &, int, int)),
             this, SLOT(RowsRemovedHandler(const QModelIndex &, int, int)));
+}
+
+void MetaEditor::FillWithFetchedMetadata(MetadataResult result)
+{
+    if (result.bAuthor) {
+        ui.leAuthor->setText(result.author);
+        m_IsDataModified = true;
+    }
+    if (result.bTitle) {
+        ui.leTitle->setText(result.title);
+        m_IsDataModified = true;
+    }
+    if (result.bCategory) {
+        Metadata::MetaElement book_meta;
+        book_meta.name = "type";
+        book_meta.value = result.author;
+        AddOrUpdateMetadataToTable(book_meta);
+        m_IsDataModified = true;
+    }
+    if (result.bSeries) {
+        Metadata::MetaElement book_meta;
+        book_meta.name = "calibre:series";
+        book_meta.value = result.series;
+        AddOrUpdateMetadataToTable(book_meta);
+        m_IsDataModified = true;
+    }
+    if (result.bSeriesIndex) {
+        Metadata::MetaElement book_meta;
+        book_meta.name = "calibre:series_index";
+        book_meta.value = result.seriesIndex;
+        AddOrUpdateMetadataToTable(book_meta);
+        m_IsDataModified = true;
+    }
+    if (result.bRating) {
+        Metadata::MetaElement book_meta;
+        book_meta.name = "calibre:rating";
+        book_meta.value = result.rating;
+        AddOrUpdateMetadataToTable(book_meta);
+        m_IsDataModified = true;
+    }
+    if (result.bDescription) {
+        Metadata::MetaElement book_meta;
+        book_meta.name = "description";
+        book_meta.value = result.description;
+        AddOrUpdateMetadataToTable(book_meta);
+        m_IsDataModified = true;
+    }
 }

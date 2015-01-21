@@ -27,8 +27,9 @@
 
 #include <QtWidgets/QDialog>
 #include <QtGui/QStandardItemModel>
-#include "BookManipulation/Book.h"
 #include <BookManipulation/Metadata.h>
+#include "BookManipulation/Book.h"
+#include "Dialogs/FetchMetadata.h"
 
 #include "ui_MetaEditor.h"
 
@@ -161,6 +162,10 @@ private:
      * @param metavalue The value of the new metadata field.
      */
     void AddMetadataToTable(Metadata::MetaElement book_meta, int row = -1);
+    void AddOrUpdateMetadataToTable(Metadata::MetaElement book_meta);
+    void UpdateMetadataToTable(Metadata::MetaElement book_meta, int row);
+    int FindMetadataRowInTable(Metadata::MetaElement book_meta);
+    QString NameToCode(QString name);
 
     /**
      * Reads the metadata from the Book and fills
@@ -211,6 +216,8 @@ private:
 
     void SetOriginalData();
     void SetDataModifiedIfNeeded();
+
+    void FillWithFetchedMetadata(MetadataResult result);
 
     ///////////////////////////////
     // PRIVATE MEMBER VARIABLES
